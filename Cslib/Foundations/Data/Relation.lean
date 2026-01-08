@@ -313,16 +313,24 @@ theorem confluent_mono_closed (h₁ : Subrelation r₁ r₂) (h₂ : Subrelation
   have := reflTransGen_mono_closed h₁ h₂
   grind [StronglyConfluent.toConfluent]
 
-/-- The type of successors of an element `a : α` in a relation `r : α → α → Prop`. -/
-structure Successor (r : α → α → Prop) (a : α) where (s : α) (hs : r a s)
+/-- The type of direct successors of an element `a : α` in a relation `r : α → α → Prop`. -/
+structure DirectSuccessor (r : α → α → Prop) (a : α) where (s : α) (hs : r a s)
 
 /-- A relation is finitely branching when each element has only finitely many direct successors. -/
-abbrev FinitelyBranching (r : α → α → Prop) : Prop := ∀ {a : α}, Finite (Successor r a)
+abbrev FinitelyBranching (r : α → α → Prop) : Prop := ∀ {a}, Finite (DirectSuccessor r a)
 
 /-- A relation is globally finite when its transitive closure is finitely branching -/
 abbrev GloballyFinite (r : α → α → Prop) := FinitelyBranching (TransGen r)
 
 /-- A relation is acyclic when its transitive closure is irreflexive. -/
 abbrev Acyclic (r : α → α → Prop) := Irreflexive (TransGen r)
+
+theorem lem224 (r : α → α → Prop) (hfb : FinitelyBranching r) (ht : Terminating r)
+    : GloballyFinite r := by
+  have := ht.toTransGen
+  sorry
+
+theorem lem225 (r : α → α → Prop) (ha : Acyclic r) (hgf : GloballyFinite r) : Terminating r := by
+  sorry
 
 end Relation
