@@ -303,4 +303,13 @@ theorem reflTransGen_mono_closed (h₁ : Subrelation r₁ r₂) (h₂ : Subrelat
   ext
   exact ⟨ReflTransGen.mono @h₁, reflTransGen_closed @h₂⟩
 
+@[scoped grind =>]
+theorem confluent_reflTransGen_eq_iff (h : ReflTransGen r₁ = ReflTransGen r₂)
+    : Confluent r₁ ↔ Confluent r₂ := by unfold Confluent; rw [h]
+
+theorem confluent_mono_closed (h₁ : Subrelation r₁ r₂) (h₂ : Subrelation r₂ (ReflTransGen r₁))
+    (h₃ : StronglyConfluent r₂) : Confluent r₁ := by
+  have := reflTransGen_mono_closed h₁ h₂
+  grind [StronglyConfluent.toConfluent]
+
 end Relation
