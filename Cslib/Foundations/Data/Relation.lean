@@ -1,12 +1,13 @@
 /-
 Copyright (c) 2025 Fabrizio Montesi and Thomas Waring. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Fabrizio Montesi, Thomas Waring, Chris Henson
+Authors: Fabrizio Montesi, Thomas Waring, Chris Henson, Oliver Soeser
 -/
 
 import Cslib.Init
 import Mathlib.Logic.Relation
 import Mathlib.Data.List.TFAE
+import Mathlib.Data.Finite.Defs
 import Mathlib.Order.WellFounded
 import Mathlib.Order.BooleanAlgebra.Basic
 
@@ -311,5 +312,17 @@ theorem confluent_mono_closed (h₁ : Subrelation r₁ r₂) (h₂ : Subrelation
     (h₃ : StronglyConfluent r₂) : Confluent r₁ := by
   have := reflTransGen_mono_closed h₁ h₂
   grind [StronglyConfluent.toConfluent]
+
+/-- The type of successors of an element `a : α` in a relation `r : α → α → Prop`. -/
+structure Successor (r : α → α → Prop) (a : α) where (s : α) (hs : r a s)
+
+/-- A relation is finitely branching when each element has only finitely many direct successors. -/
+abbrev FinitelyBranching (r : α → α → Prop) : Prop := ∀ {a : α}, Finite (Successor r a)
+
+/-- A relation is globally finite when its transitive closure is finitely branching -/
+abbrev GloballyFinite (r : α → α → Prop) := FinitelyBranching (TransGen r)
+
+/-- A relation is acyclic when its transitive closure is irreflexive. -/
+abbrev Acyclic (r : α → α → Prop) := Irreflexive (TransGen r)
 
 end Relation
