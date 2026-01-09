@@ -330,21 +330,23 @@ abbrev Acyclic (r : α → α → Prop) := Irreflexive (TransGen r)
 theorem Terminating.induction {C : α → Prop} {r : α → α → Prop} (ht : Terminating r) (a : α)
     (h : ∀ x, (∀ y, TransGen r x y → C y) → C x) : C a := WellFounded.induction ht.toTransGen a h
 
+/-- If a finitely branching relation is terminating, it is globally finite. -/
 theorem globallyFinite_if_finitelyBranching_terminating (r : α → α → Prop)
     (hfb : FinitelyBranching r) (ht : Terminating r) : GloballyFinite r := by
   intro a
   apply ht.induction a
   intro x h
-  let T := (DirectSuccessor r x) ⊕
-    (Σ (y : DirectSuccessor r x), (DirectSuccessor (TransGen r) y.val))
-  have : ∀ y : DirectSuccessor r x, Finite (DirectSuccessor (TransGen r) y.val) := by grind
-  have : Finite T := by infer_instance
+  let T := (DirectSuccessor r x) ⊕ (y : DirectSuccessor r x) × (DirectSuccessor (TransGen r) y.1)
+  have : ∀ y : DirectSuccessor r x, Finite (DirectSuccessor (TransGen r) y.1) := by grind
   let f (t : T) : DirectSuccessor (TransGen r) x := match t with
-    | Sum.inl y => ⟨y.val, TransGen.single y.property⟩
-    | Sum.inr ⟨y, z⟩ => ⟨z.val, TransGen.trans (TransGen.single y.property) z.property⟩
-  have surj : Function.Surjective f := sorry
+    | .inl y => ⟨y.1, TransGen.single y.2⟩
+    | .inr ⟨y, z⟩ => ⟨z.1, TransGen.trans (TransGen.single y.2) z.2⟩
+  have surj : Function.Surjective f := by
+    intro b
+    sorry
   exact Finite.of_surjective f surj
 
+/-- If a globally finite relation is acyclic, it is terminating. -/
 theorem terminating_if_acyclic_globallyFinite (r : α → α → Prop) (ha : Acyclic r)
     (hgf : GloballyFinite r) : Terminating r := by
   sorry
