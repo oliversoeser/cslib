@@ -7,7 +7,7 @@ Authors: Fabrizio Montesi, Thomas Waring, Chris Henson, Oliver Soeser
 import Cslib.Init
 import Mathlib.Logic.Relation
 import Mathlib.Data.List.TFAE
-import Mathlib.Data.Finite.Defs
+import Mathlib.Data.Finite.Sum
 import Mathlib.Order.WellFounded
 import Mathlib.Order.BooleanAlgebra.Basic
 
@@ -329,14 +329,15 @@ abbrev Acyclic (r : α → α → Prop) := Irreflexive (TransGen r)
 theorem Terminating.induction {C : α → Prop} {r : α → α → Prop} (ht : Terminating r) (a : α)
     (h : ∀ x, (∀ y, TransGen r x y → C y) → C x) : C a := WellFounded.induction ht.toTransGen a h
 
-theorem lem224 (r : α → α → Prop) (hfb : FinitelyBranching r) (ht : Terminating r)
-    : GloballyFinite r := by
-  unfold GloballyFinite
-  unfold FinitelyBranching
-
+theorem globallyFinite_if_finitelyBranching_terminating (r : α → α → Prop)
+    (hfb : FinitelyBranching r) (ht : Terminating r) : GloballyFinite r := by
+  intro a
+  apply ht.induction a
+  intro x h
   sorry
 
-theorem lem225 (r : α → α → Prop) (ha : Acyclic r) (hgf : GloballyFinite r) : Terminating r := by
+theorem terminating_if_acyclic_globallyFinite (r : α → α → Prop) (ha : Acyclic r)
+    (hgf : GloballyFinite r) : Terminating r := by
   sorry
 
 end Relation
