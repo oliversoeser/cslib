@@ -7,7 +7,8 @@ Authors: Fabrizio Montesi, Thomas Waring, Chris Henson, Oliver Soeser
 import Cslib.Init
 import Mathlib.Logic.Relation
 import Mathlib.Data.List.TFAE
-import Mathlib.Data.Fintype.EquivFin
+import Mathlib.Data.Finite.Sum
+import Mathlib.Data.Finite.Sigma
 import Mathlib.Order.WellFounded
 import Mathlib.Order.BooleanAlgebra.Basic
 
@@ -334,7 +335,13 @@ theorem globallyFinite_if_finitelyBranching_terminating (r : α → α → Prop)
   intro a
   apply ht.induction a
   intro x h
-  sorry
+  let T := (DirectSuccessor r x) ⊕
+    (Σ (y : DirectSuccessor r x), (DirectSuccessor (TransGen r) y.val))
+  have : ∀ y : DirectSuccessor r x, Finite (DirectSuccessor (TransGen r) y.val) := by grind
+  have : Finite T := by infer_instance
+  let f (z : DirectSuccessor (TransGen r) x) : T := sorry
+  have inj : Function.Injective f := sorry
+  exact Finite.of_injective f inj
 
 theorem terminating_if_acyclic_globallyFinite (r : α → α → Prop) (ha : Acyclic r)
     (hgf : GloballyFinite r) : Terminating r := by
