@@ -7,7 +7,7 @@ Authors: Fabrizio Montesi, Thomas Waring, Chris Henson, Oliver Soeser
 import Cslib.Init
 import Mathlib.Logic.Relation
 import Mathlib.Data.List.TFAE
-import Mathlib.Data.Finite.Sum
+import Mathlib.Data.Fintype.EquivFin
 import Mathlib.Order.WellFounded
 import Mathlib.Order.BooleanAlgebra.Basic
 
@@ -313,8 +313,8 @@ theorem confluent_mono_closed (h₁ : Subrelation r₁ r₂) (h₂ : Subrelation
   have := reflTransGen_mono_closed h₁ h₂
   grind [StronglyConfluent.toConfluent]
 
-/-- The type of direct successors of an element `a : α` in a relation `r : α → α → Prop`. -/
-structure DirectSuccessor (r : α → α → Prop) (a : α) where (s : α) (hs : r a s)
+/-- The subtype of `α` of direct successors of `x : α` under `r : α → α → Prop`. -/
+def DirectSuccessor (r : α → α → Prop) (x : α) := { y // r x y }
 
 /-- A relation is finitely branching when each element has only finitely many direct successors. -/
 abbrev FinitelyBranching (r : α → α → Prop) : Prop := ∀ {a}, Finite (DirectSuccessor r a)
