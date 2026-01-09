@@ -325,9 +325,15 @@ abbrev GloballyFinite (r : α → α → Prop) := FinitelyBranching (TransGen r)
 /-- A relation is acyclic when its transitive closure is irreflexive. -/
 abbrev Acyclic (r : α → α → Prop) := Irreflexive (TransGen r)
 
+/-- Well-founded (or Noetherian) induction for terminating relations. -/
+theorem Terminating.induction {C : α → Prop} {r : α → α → Prop} (ht : Terminating r) (a : α)
+    (h : ∀ x, (∀ y, TransGen r x y → C y) → C x) : C a := WellFounded.induction ht.toTransGen a h
+
 theorem lem224 (r : α → α → Prop) (hfb : FinitelyBranching r) (ht : Terminating r)
     : GloballyFinite r := by
-  have := ht.toTransGen
+  unfold GloballyFinite
+  unfold FinitelyBranching
+
   sorry
 
 theorem lem225 (r : α → α → Prop) (ha : Acyclic r) (hgf : GloballyFinite r) : Terminating r := by
