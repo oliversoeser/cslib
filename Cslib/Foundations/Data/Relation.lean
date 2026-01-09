@@ -339,9 +339,11 @@ theorem globallyFinite_if_finitelyBranching_terminating (r : α → α → Prop)
     (Σ (y : DirectSuccessor r x), (DirectSuccessor (TransGen r) y.val))
   have : ∀ y : DirectSuccessor r x, Finite (DirectSuccessor (TransGen r) y.val) := by grind
   have : Finite T := by infer_instance
-  let f (z : DirectSuccessor (TransGen r) x) : T := sorry
-  have inj : Function.Injective f := sorry
-  exact Finite.of_injective f inj
+  let f (t : T) : DirectSuccessor (TransGen r) x := match t with
+    | Sum.inl y => ⟨y.val, TransGen.single y.property⟩
+    | Sum.inr ⟨y, z⟩ => ⟨z.val, TransGen.trans (TransGen.single y.property) z.property⟩
+  have surj : Function.Surjective f := sorry
+  exact Finite.of_surjective f surj
 
 theorem terminating_if_acyclic_globallyFinite (r : α → α → Prop) (ha : Acyclic r)
     (hgf : GloballyFinite r) : Terminating r := by
