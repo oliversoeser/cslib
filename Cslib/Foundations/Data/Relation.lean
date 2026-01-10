@@ -317,24 +317,28 @@ theorem confluent_mono_closed (h₁ : Subrelation r₁ r₂) (h₂ : Subrelation
 /-- The subtype of `α` of direct successors of `x : α` under `r : α → α → Prop`. -/
 def DirectSuccessor (r : α → α → Prop) (x : α) := { y // r x y }
 
-/-- `Successor r x` is the inductive type of successors of `x : α` under `r : α → α → Prop`. -/
-inductive Successor (r : α → α → Prop) : α → Type _ where
-  | single {x : α} (z : DirectSuccessor r x) : Successor r x
-  | tail {x : α} (y : DirectSuccessor r x) (z : Successor r y.1) : Successor r x
--- TODO: Is this a viable Successor type?
+/-- `Path r x` is the inductive type paths from `x : α` under `r : α → α → Prop`. -/
+inductive Path (r : α → α → Prop) : α → Type _ where
+  | single {x : α} (y : DirectSuccessor r x) : Path r x
+  | tail {x : α} (y : DirectSuccessor r x) (z : Path r y.1) : Path r x
 
-def Successor.elem (s : Successor r x) : α := match s with
-  | single z => z.1
-  | tail _ z => z.elem
+def Path.end (s : Path r x) : α := match s with
+  | single y => y.val
+  | tail _ z => z.end
 
 /-- A relation is finitely branching when each element has only finitely many direct successors. -/
 abbrev FinitelyBranching (r : α → α → Prop) : Prop := ∀ {a}, Finite (DirectSuccessor r a)
 
 /-- A relation is globally finite when each element has only finitely many successors. -/
-abbrev GloballyFinite (r : α → α → Prop) := ∀ {a}, Finite (Successor r a)
+abbrev GloballyFinite (r : α → α → Prop) := ∀ {a}, Finite (DirectSuccessor (TransGen r) a)
 
 /-- A relation is acyclic when its transitive closure is irreflexive. -/
 abbrev Acyclic (r : α → α → Prop) := Irreflexive (TransGen r)
+
+/-- If there are finitely many paths from `a : α` then `a` has finitely many successors -/
+lemma finite_successors_of_finite_paths {a : α} (h : Finite (Path r a))
+    : Finite (DirectSuccessor (TransGen r) a) := by
+  sorry
 
 /-- Well-founded (or Noetherian) induction for terminating relations. -/
 theorem Terminating.induction {C : α → Prop} {r : α → α → Prop} (ht : Terminating r) (a : α)
@@ -344,11 +348,12 @@ theorem Terminating.induction {C : α → Prop} {r : α → α → Prop} (ht : T
 theorem globallyFinite_if_finitelyBranching_terminating (r : α → α → Prop)
     (hfb : FinitelyBranching r) (ht : Terminating r) : GloballyFinite r := by
   intro a
+  apply finite_successors_of_finite_paths
   apply ht.induction a
   intro x h
-  let T := (DirectSuccessor r x) ⊕ (y : DirectSuccessor r x) × (Successor r y.1)
-  have : ∀ y : DirectSuccessor r x, Finite (Successor r y.1) := by grind
-  let f (t : T) : Successor r x := match t with
+  let T := (DirectSuccessor r x) ⊕ (y : DirectSuccessor r x) × (Path r y.1)
+  have : ∀ y : DirectSuccessor r x, Finite (Path r y.1) := by grind
+  let f (t : T) : Path r x := match t with
     | .inl y => .single y --⟨y.1, TransGen.single y.2⟩
     | .inr ⟨y, z⟩ => .tail y z --⟨z.elem, TransGen.trans (TransGen.single y.2) sorry⟩
   have surj : Function.Surjective f := by
