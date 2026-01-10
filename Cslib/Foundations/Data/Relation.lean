@@ -317,11 +317,21 @@ theorem confluent_mono_closed (h₁ : Subrelation r₁ r₂) (h₂ : Subrelation
 /-- The subtype of `α` of direct successors of `x : α` under `r : α → α → Prop`. -/
 def DirectSuccessor (r : α → α → Prop) (x : α) := { y // r x y }
 
+/-- `Successor r x` is the inductive type of successors of `x : α` under `r : α → α → Prop`. -/
+inductive Successor (r : α → α → Prop) : α → Type _ where
+  | single {x : α} (z : DirectSuccessor r x) : Successor r x
+  | tail {x : α} (y : DirectSuccessor r x) (z : Successor r y.1) : Successor r x
+-- TODO: Is this a viable Successor type?
+
+def Successor.elem (s : Successor r x) : α := match s with
+  | single z => z.1
+  | tail _ z => z.elem
+
 /-- A relation is finitely branching when each element has only finitely many direct successors. -/
 abbrev FinitelyBranching (r : α → α → Prop) : Prop := ∀ {a}, Finite (DirectSuccessor r a)
 
-/-- A relation is globally finite when its transitive closure is finitely branching -/
-abbrev GloballyFinite (r : α → α → Prop) := FinitelyBranching (TransGen r)
+/-- A relation is globally finite when each element has only finitely many successors. -/
+abbrev GloballyFinite (r : α → α → Prop) := ∀ {a}, Finite (Successor r a)
 
 /-- A relation is acyclic when its transitive closure is irreflexive. -/
 abbrev Acyclic (r : α → α → Prop) := Irreflexive (TransGen r)
@@ -336,19 +346,25 @@ theorem globallyFinite_if_finitelyBranching_terminating (r : α → α → Prop)
   intro a
   apply ht.induction a
   intro x h
-  let T := (DirectSuccessor r x) ⊕ (y : DirectSuccessor r x) × (DirectSuccessor (TransGen r) y.1)
-  have : ∀ y : DirectSuccessor r x, Finite (DirectSuccessor (TransGen r) y.1) := by grind
-  let f (t : T) : DirectSuccessor (TransGen r) x := match t with
-    | .inl y => ⟨y.1, TransGen.single y.2⟩
-    | .inr ⟨y, z⟩ => ⟨z.1, TransGen.trans (TransGen.single y.2) z.2⟩
+  let T := (DirectSuccessor r x) ⊕ (y : DirectSuccessor r x) × (Successor r y.1)
+  have : ∀ y : DirectSuccessor r x, Finite (Successor r y.1) := by grind
+  let f (t : T) : Successor r x := match t with
+    | .inl y => .single y --⟨y.1, TransGen.single y.2⟩
+    | .inr ⟨y, z⟩ => .tail y z --⟨z.elem, TransGen.trans (TransGen.single y.2) sorry⟩
   have surj : Function.Surjective f := by
     intro b
-    sorry
+    match b with
+    | .single y => exists (.inl y)
+    | .tail y z => exists (.inr ⟨y, z⟩)
   exact Finite.of_surjective f surj
 
 /-- If a globally finite relation is acyclic, it is terminating. -/
 theorem terminating_if_acyclic_globallyFinite (r : α → α → Prop) (ha : Acyclic r)
     (hgf : GloballyFinite r) : Terminating r := by
+  apply wellFounded_iff_isEmpty_descending_chain.mpr
+  by_contra h
+  simp only [not_isEmpty_iff, nonempty_subtype] at h
+  have ⟨x, h'⟩ := h
   sorry
 
 end Relation
